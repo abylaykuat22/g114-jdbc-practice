@@ -150,4 +150,25 @@ public class DBUtil {
       e.printStackTrace();
     }
   }
+
+  public static Author getAuthorByEmail(String email, String password) {
+    Author author = null;
+    try {
+      PreparedStatement statement = connection.prepareStatement(
+          "select * from authors where email = ? and password = ?");
+      statement.setString(1, email);
+      statement.setString(2, password);
+      ResultSet resultSet = statement.executeQuery();
+      if (resultSet.next()) {
+        author = new Author();
+        author.setId(resultSet.getLong("id"));
+        author.setFirstName(resultSet.getString("first_name"));
+        author.setLastName(resultSet.getString("last_name"));
+      }
+      statement.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return author;
+  }
 }

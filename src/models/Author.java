@@ -6,6 +6,8 @@ public class Author {
   private String lastName;
   private County county;
   private Category category;
+  private String email;
+  private String password;
 
   public Long getId() {
     return id;
