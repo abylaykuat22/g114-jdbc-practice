@@ -1,6 +1,6 @@
 package models;
 
-public class County {
+public class Country {
   private Long id;
   private String name;
   private String shortName;

@@ -18,6 +18,7 @@ public class AuthServlet extends HttpServlet {
       throws ServletException, IOException {
     Author author = (Author) req.getSession().getAttribute("currentUser");
     if (author == null) {
+      req.setAttribute("countries", DBUtil.getCountries());
       req.getRequestDispatcher("auth.jsp").forward(req, resp);
     }
     resp.sendRedirect("/home");
@@ -29,7 +30,7 @@ public class AuthServlet extends HttpServlet {
     String email = req.getParameter("email");
     String password = req.getParameter("password");
     String redirect = "/auth?error"; // req.setParameter("error")
-    Author author = DBUtil.getAuthorByEmail(email, password);
+    Author author = DBUtil.getAuthorByEmailAndPassword(email, password);
     if (author != null) {
       HttpSession session = req.getSession();
       session.setAttribute("currentUser", author);

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import models.Author;
 import models.Category;
-import models.County;
+import models.Country;
 import models.Post;
 
 public class DBUtil {
@@ -79,10 +79,10 @@ public class DBUtil {
         author.setFirstName(resultSet.getString("first_name"));
         author.setLastName(resultSet.getString("last_name"));
 
-        County county = new County();
-        county.setName(resultSet.getString("countryName"));
+        Country country = new Country();
+        country.setName(resultSet.getString("countryName"));
 
-        author.setCounty(county);
+        author.setCounty(country);
         post.setAuthor(author);
 
         Category category = new Category();
@@ -151,7 +151,7 @@ public class DBUtil {
     }
   }
 
-  public static Author getAuthorByEmail(String email, String password) {
+  public static Author getAuthorByEmailAndPassword(String email, String password) {
     Author author = null;
     try {
       PreparedStatement statement = connection.prepareStatement(
@@ -170,5 +170,80 @@ public class DBUtil {
       e.printStackTrace();
     }
     return author;
+  }
+
+  public static Author getAuthorByEmail(String email) {
+    Author author = null;
+    try {
+      PreparedStatement statement = connection.prepareStatement(
+          "select * from authors where email = ?");
+      statement.setString(1, email);
+      ResultSet resultSet = statement.executeQuery();
+      if (resultSet.next()) {
+        author = new Author();
+        author.setId(resultSet.getLong("id"));
+        author.setFirstName(resultSet.getString("first_name"));
+        author.setLastName(resultSet.getString("last_name"));
+      }
+      statement.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return author;
+  }
+
+  public static List<Country> getCountries() {
+    List<Country> counties = new ArrayList<>();
+    try {
+      PreparedStatement statement = connection.prepareStatement(
+          "select * from countries");
+      ResultSet resultSet = statement.executeQuery();
+      while (resultSet.next()) {
+        Country country = new Country();
+        country.setId(resultSet.getLong("id"));
+        country.setName(resultSet.getString("name"));
+        country.setShortName(resultSet.getString("short_name"));
+        counties.add(country);
+      }
+      statement.close();
+    }catch (Exception e) {
+      e.printStackTrace();
+    }
+    return counties;
+  }
+
+  public static void addAuthor(Author author, Long countryId) {
+    try {
+      PreparedStatement statement = connection.prepareStatement(
+          "insert into authors(first_name, last_name, country_id, email, password) "
+              + "values (?, ?, ?, ?, ?)");
+      statement.setString(1, author.getFirstName());
+      statement.setString(2, author.getLastName());
+      statement.setLong(3, countryId);
+      statement.setString(4, author.getEmail());
+      statement.setString(5, author.getPassword());
+      statement.executeUpdate();
+      statement.close();
+    }catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  public static Country getCountryById(Long id) {
+    Country country = null;
+    try {
+      PreparedStatement statement = connection.prepareStatement(
+          "select * from countries "
+              + "where id = ?");
+      statement.setLong(1, id);
+      ResultSet resultSet = statement.executeQuery();
+      if (resultSet.next()) {
+        country = new Country();
+        country.setId(resultSet.getLong("id"));
+      }
+    }catch (Exception e) {
+      e.printStackTrace();
+    }
+    return country;
   }
 }
