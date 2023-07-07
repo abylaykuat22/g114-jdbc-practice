@@ -4,10 +4,15 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import models.Author;
 import models.Category;
+import models.Comment;
 import models.Country;
 import models.Post;
 
@@ -192,6 +197,26 @@ public class DBUtil {
     return author;
   }
 
+  public static Author getAuthorById(Long id) {
+    Author author = null;
+    try {
+      PreparedStatement statement = connection.prepareStatement(
+          "select * from authors where id = ?");
+      statement.setLong(1, id);
+      ResultSet resultSet = statement.executeQuery();
+      if (resultSet.next()) {
+        author = new Author();
+        author.setId(resultSet.getLong("id"));
+        author.setFirstName(resultSet.getString("first_name"));
+        author.setLastName(resultSet.getString("last_name"));
+      }
+      statement.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return author;
+  }
+
   public static List<Country> getCountries() {
     List<Country> counties = new ArrayList<>();
     try {
@@ -245,5 +270,50 @@ public class DBUtil {
       e.printStackTrace();
     }
     return country;
+  }
+
+  public static void addComment(String caption, Long postId, Long authorId) {
+    try {
+      PreparedStatement statement = connection.prepareStatement(
+          "insert into comments(caption, post_id, author_id, created_date) "
+              + "values (?, ?, ?, now())");
+      statement.setString(1, caption);
+      statement.setLong(2, postId);
+      statement.setLong(3, authorId);
+//      statement.setDate(4, Date.valueOf(LocalDate.now()));
+      statement.executeUpdate();
+      statement.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  public static List<Comment> getCommentsByPostId(Long postId) {
+    List<Comment> comments = new ArrayList<>();
+    try {
+      PreparedStatement statement = connection.prepareStatement(""
+          + "select * from comments where post_id = ?");
+      statement.setLong(1, postId);
+      ResultSet resultSet = statement.executeQuery();
+      while (resultSet.next()) {
+        Comment comment = new Comment();
+        comment.setId(resultSet.getLong("id"));
+        comment.setCaption(resultSet.getString("caption"));
+        comment.setPost(getPostById(postId));
+
+        Long authorId = resultSet.getLong("author_id");
+        Author author = getAuthorById(authorId);
+        comment.setAuthor(author);
+
+        LocalDateTime createdDate = resultSet.getTimestamp("created_date").toLocalDateTime();
+
+        comment.setCreatedDate(createdDate);
+
+        comments.add(comment);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return comments;
   }
 }

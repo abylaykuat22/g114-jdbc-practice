@@ -16,6 +16,7 @@ public class DetailsServlet extends HttpServlet {
       throws ServletException, IOException {
     Long id = Long.parseLong(req.getParameter("id"));
     req.setAttribute("novost", DBUtil.getPostById(id));
+    req.setAttribute("comments", DBUtil.getCommentsByPostId(id));
     req.getRequestDispatcher("details.jsp").forward(req, resp);
   }
 }
